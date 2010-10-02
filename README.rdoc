@@ -1,4 +1,4 @@
-= SKINNY JEANS LOG PARSING WITH RUBY & SQLITE
+= SKINNY JEANS LOG PARSING WITH RUBY & SQLITE FOR HIPSTERS
 http://img696.imageshack.us/img696/75/skinnys3.jpg
 
 == Requirements
