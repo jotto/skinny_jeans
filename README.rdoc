@@ -16,11 +16,11 @@ http://img696.imageshack.us/img696/75/skinnys3.jpg
 
 
 == WHAT IT DO
-# it parses 100,000 lines in 5 seconds, persists 2000 lines with 2 compound indexes in 30 seconds
-# 
-# parse a webserver's log file to aggregate paths by DAY with pageview counts
-# 
-# creates sqlite database with columns: date, path, pageview_count
-# 
-# ASSUMES reading log files in ascending order, keeps track of last line read
-# so you could put it on a scheduler or cron job
+  it parses 100,000 lines in 5 seconds, persists 2000 lines with 2 compound indexes in 30 seconds
+
+  parse a webserver's log file to aggregate paths by DAY with pageview counts
+
+  creates sqlite database with columns: date, path, pageview_count
+
+  ASSUMES reading log files in ascending order, keeps track of last line read
+  so you could put it on a scheduler or cron job
