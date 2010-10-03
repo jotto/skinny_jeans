@@ -14,9 +14,9 @@ http://img696.imageshack.us/img696/75/skinnys3.jpg
 
 
 == Usage
-1.  SkinnyJeans::execute(logfile_path = "access.log", sqlite_skinny_jeans = "sqlite_skinny_jeans.db", path_regexp = /\s\/posts\/(.*)\sHTTP/, date_regexp = /\[(\d.*\d)\]/)
-2.  Parse oldest logs first, then run regularly against your main log, let logrotate handle the rest (skinny_jeans remembers where it left off)
-3.  enjoy the skinny jeans
+  SkinnyJeans::execute(logfile_path = "access.log", sqlite_skinny_jeans = "sqlite_skinny_jeans.db", path_regexp = /\s\/posts\/(.*)\sHTTP/, date_regexp = /\[(\d.*\d)\]/)
+1.  Parse oldest logs first, then run regularly against your main log, let logrotate handle the rest (skinny_jeans remembers where it left off)
+2.  enjoy the skinny jeans
 
 
 == WHAT IT DO
