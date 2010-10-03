@@ -15,9 +15,12 @@ Gem::Specification.new do |s|
     "README.rdoc"
   ]
   s.files = [
-    "README.rdoc",
+    ".gitignore",
+     "README.rdoc",
      "Rakefile",
-     "VERSION"
+     "VERSION",
+     "lib/skinny_jeans.rb",
+     "skinny-jeans.gemspec"
   ]
   s.homepage = %q{http://github.com/jotto/skinny-jeans}
   s.rdoc_options = ["--charset=UTF-8"]

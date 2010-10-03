@@ -7,7 +7,6 @@ begin
     s.email = "jonathan.otto@gmail.com"
     s.homepage = "http://github.com/jotto/skinny-jeans"
     s.authors = ["Jonathan Otto"]
-    s.files =  FileList["[A-Z]*"]
     s.add_dependency 'sqlite3-ruby', '>= 1.2.4'
     s.add_dependency 'activerecord', '>= 3.0.0'
     s.add_dependency 'home_run', '>= 0.9.3'
