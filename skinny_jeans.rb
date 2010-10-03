@@ -3,8 +3,10 @@ require 'benchmark'
 require 'rubygems'
 require 'sqlite3'
 require 'active_record'
-
+require 'home_run'
 PATH_TO_SQLITE_DB = "/Users/rick_ross/the_bawse/skinny_jeans/sqlite_skinny_jeans.db"
+DATE_REGEXP = /\[(\d.*\d)\]/
+PATH_REGEXP = /\s\/posts\/(.*)\sHTTP/
 
 class Pageview < ActiveRecord::Base
 end
@@ -17,10 +19,7 @@ class SkinnyJeans
     def prepare_db()
       # create database if necessary
       SQLite3::Database.new(PATH_TO_SQLITE_DB)
-
-      # ACTIVATE
       ActiveRecord::Base.establish_connection(:adapter => 'sqlite3', :database => PATH_TO_SQLITE_DB)
-
       # create tables if necessary
       if !Pageview.table_exists?
         ActiveRecord::Base.connection.create_table(:pageviews) do |t|
@@ -28,8 +27,7 @@ class SkinnyJeans
           t.column :path, :string
           t.column :pageview_count, :integer
         end
-
-        # flow tight like skinny jeans with these compound index
+        # flow tight like skinny jeans with these compound indexes
         ActiveRecord::Base.connection.add_index(:pageviews, [:date, :path], :name => "date_path_index")
         ActiveRecord::Base.connection.add_index(:pageviews, [:date, :pageview_count], :name => "date_pageview_count_index")
       end
@@ -39,9 +37,7 @@ class SkinnyJeans
           t.column :lines_parsed, :integer
         end
       end
-
     end
-
 
     def execute(filename = ARGV.first)
 
@@ -54,9 +50,10 @@ class SkinnyJeans
         date_path_pairs_array = []
 
         File.new(filename, "r").each do |line|
-          path_match = path_extract_via_regexp(line)
-          date_match = date_extract_via_regexp(line)
-          next if [path_match, date_match].any?{ |m| m.nil? || m.empty? }
+          path_match = line[PATH_REGEXP,1]
+          next if path_match.nil?
+          date_match = line[DATE_REGEXP,1]
+          next if date_match.nil?
           time_object = parse_string_as_date(date_match)
           next if !last_pageview_at.nil? && time_object < last_pageview_at
           skinny_jean.insert_or_increment([time_object,path_match])
@@ -78,7 +75,7 @@ class SkinnyJeans
           end
         end
       end
-
+      
       puts "completed persistence in #{realtime}"
 
       Update.create!({:last_pageview_at => skinny_jean.last_pageview_at, :lines_parsed => lines_parsed})
@@ -91,16 +88,6 @@ class SkinnyJeans
     def parse_string_as_date(date_string = "02/Oct/2010:11:17:44 -0700")
       day,month,year,hour,minute,seconds,zone = date_string.scan(/(\d{1,2})\/(\w{3,5})\/(\d{4}):(\d\d):(\d\d):(\d\d)\s(-?\d{3,4})/).flatten
       Time.parse("#{year}-#{month}-#{day} #{hour}:#{minute}:#{seconds} #{zone}")
-    end
-
-    # returns a date string
-    def date_extract_via_regexp(string)
-      string.scan(/\[(\d.*\d)\]/).flatten.first
-    end
-
-    # returns a path string
-    def path_extract_via_regexp(string)
-      string.scan(/\s\/posts\/(.*)\sHTTP/).flatten.first
     end
 
   end

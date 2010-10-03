@@ -1,6 +1,11 @@
 = SKINNY JEANS LOG PARSING WITH RUBY & SQLITE FOR HIPSTERS
 http://img696.imageshack.us/img696/75/skinnys3.jpg
 
+== WHY?
+*  so you can query a database by date and path and get pageviews and have that data stored CHEAP
+*  because i couldn't find anything simpler and Google Analytics is limited to 10,000 API requests per day
+
+
 == Requirements
 1.  some NGINX or Apache log to parse
 2.  Ruby >= 1.8.6 maybe
@@ -9,18 +14,18 @@ http://img696.imageshack.us/img696/75/skinnys3.jpg
 
 
 == Usage
-1.  Edit SkinnyJeans.path_extract_via_regexp and SkinnyJeans.date_extract_via_regexp to work for YOUR log file
-2.  Edit the PATH_TO_SQLITE_DB global var
+1.  Edit the 3 global variables at the top of skinny_jeans.rb
 2.  ruby skinny_jeans.rb /path/to/access.log
-4.  enjoy the skinny jeans
+3.  Parse oldest logs first, then run regularly against your main log, let logrotate handle the rest (skinny_jeans remembers where it left off)
+3.  enjoy the skinny jeans
 
 
 == WHAT IT DO
-  it parses 100,000 lines in 5 seconds, persists 2000 lines with 2 compound indexes in 30 seconds
+*  it parses 100,000 lines in < 2.5 seconds
+*  persists 1,000 requests with 2 compound indexes in 10 seconds (using home_run c date parser, 15 seconds without home_run)
 
-  parse a webserver's log file to aggregate paths by DAY with pageview counts
+*  parse a webserver's log file to aggregate paths by DAY with pageview counts
 
-  creates sqlite database with columns: date, path, pageview_count
+*  creates sqlite database with columns: date, path, pageview_count
 
-  ASSUMES reading log files in ascending order, keeps track of last line read
-  so you could put it on a scheduler or cron job
+*  ASSUMES reading log files in ascending order, keeps track of last line read so you could put it on a scheduler or cron job
