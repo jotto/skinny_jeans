@@ -1,16 +1,23 @@
 = SKINNY JEANS LOG PARSING WITH RUBY & SQLITE FOR HIPSTERS
 http://img696.imageshack.us/img696/75/skinnys3.jpg
 
+== example
+
+*  your log file has lines that look like
+
+  0.0.0.0 - - [01/Oct/2010:00:00:00 -0700] "GET /posts/my-first-post HTTP/1.1" 200 1337 "-" "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" "-"
+  0.0.0.0 - - [01/Oct/2010:00:00:01 -0700] "GET /posts/my-first-post HTTP/1.1" 200 1337 "-" "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" "-"
+  0.0.0.0 - - [01/Oct/2010:00:00:03 -0700] "GET /posts/my-first-post HTTP/1.1" 200 1337 "-" "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" "-"
+  0.0.0.0 - - [02/Oct/2010:00:00:03 -0700] "GET /posts/my-first-post HTTP/1.1" 200 1337 "-" "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" "-"
+
+*  then you get 1 SQL row that looks like:
+  2010-10-01, my-first-post, 3
+  2010-10-02, my-first-post, 1
+
+
 == WHY?
 *  so you can query a database by date and path and get pageviews and have that data stored CHEAP
 *  because i couldn't find anything simpler and Google Analytics is limited to 10,000 API requests per day
-
-
-== Requirements
-1.  some NGINX or Apache log to parse
-2.  Ruby >= 1.8.6 maybe
-3.  GEMS: sqlite3-ruby >= 1.2.4, active_record >= 3.0.0, home_run >= 0.9.3
-4.  this is some jank
 
 
 == Usage
