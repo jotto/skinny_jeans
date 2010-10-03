@@ -9,14 +9,13 @@ http://img696.imageshack.us/img696/75/skinnys3.jpg
 == Requirements
 1.  some NGINX or Apache log to parse
 2.  Ruby >= 1.8.6 maybe
-3.  GEMS: sqlite3-ruby >= 1.2.4, active_record >= 3.0.0
+3.  GEMS: sqlite3-ruby >= 1.2.4, active_record >= 3.0.0, home_run >= 0.9.3
 4.  this is some jank
 
 
 == Usage
-1.  Edit the 3 global variables at the top of skinny_jeans.rb
-2.  ruby skinny_jeans.rb /path/to/access.log
-3.  Parse oldest logs first, then run regularly against your main log, let logrotate handle the rest (skinny_jeans remembers where it left off)
+1.  SkinnyJeans::execute(logfile_path = "access.log", sqlite_skinny_jeans = "sqlite_skinny_jeans.db", path_regexp = /\s\/posts\/(.*)\sHTTP/, date_regexp = /\[(\d.*\d)\]/)
+2.  Parse oldest logs first, then run regularly against your main log, let logrotate handle the rest (skinny_jeans remembers where it left off)
 3.  enjoy the skinny jeans
 
 

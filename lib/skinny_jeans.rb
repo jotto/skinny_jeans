@@ -4,9 +4,6 @@ require 'rubygems'
 require 'sqlite3'
 require 'active_record'
 require 'home_run'
-PATH_TO_SQLITE_DB = "/Users/rick_ross/the_bawse/skinny_jeans/sqlite_skinny_jeans.db"
-DATE_REGEXP = /\[(\d.*\d)\]/
-PATH_REGEXP = /\s\/posts\/(.*)\sHTTP/
 
 class Pageview < ActiveRecord::Base
 end
@@ -18,8 +15,8 @@ class SkinnyJeans
 
     def prepare_db(sqlite_db_path)
       # create database if necessary
-      SQLite3::Database.new(PATH_TO_SQLITE_DB)
-      ActiveRecord::Base.establish_connection(:adapter => 'sqlite3', :database => PATH_TO_SQLITE_DB)
+      SQLite3::Database.new(sqlite_db_path)
+      ActiveRecord::Base.establish_connection(:adapter => 'sqlite3', :database => sqlite_db_path)
       # create tables if necessary
       if !Pageview.table_exists?
         ActiveRecord::Base.connection.create_table(:pageviews) do |t|
@@ -39,7 +36,7 @@ class SkinnyJeans
       end
     end
 
-    def execute(logfile_path, sqlite_db_path = PATH_TO_SQLITE_DB, _path_regexp = PATH_REGEXP, _date_regexp = DATE_REGEXP)
+    def execute(logfile_path, sqlite_db_path, path_regexp, date_regexp)
 
       prepare_db(sqlite_db_path)
       skinny_jean = self.new
@@ -50,9 +47,9 @@ class SkinnyJeans
         date_path_pairs_array = []
 
         File.new(logfile_path, "r").each do |line|
-          path_match = line[PATH_REGEXP,1]
+          path_match = line[path_regexp,1]
           next if path_match.nil?
-          date_match = line[DATE_REGEXP,1]
+          date_match = line[date_regexp,1]
           next if date_match.nil?
           time_object = parse_string_as_date(date_match)
           next if !last_pageview_at.nil? && time_object < last_pageview_at
@@ -110,4 +107,4 @@ class SkinnyJeans
 
 end
 
-SkinnyJeans::execute(ARGV.first) if "#{$0}".gsub(/.*\//,"") == "skinny_jeans.rb"
+# SkinnyJeans::execute(ARGV.first) if "#{$0}".gsub(/.*\//,"") == "skinny_jeans.rb"
