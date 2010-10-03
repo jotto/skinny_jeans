@@ -3,7 +3,7 @@ require 'benchmark'
 require 'rubygems'
 require 'sqlite3'
 require 'active_record'
-require 'home_run'
+# require 'home_run'
 
 class Pageview < ActiveRecord::Base
 end
@@ -32,6 +32,7 @@ class SkinnyJeans
         ActiveRecord::Base.connection.create_table(:updates) do |t|
           t.column :last_pageview_at, :timestamp
           t.column :lines_parsed, :integer
+          t.column :last_line_parsed, :string
         end
       end
     end
@@ -41,19 +42,36 @@ class SkinnyJeans
       prepare_db(sqlite_db_path)
       skinny_jean = self.new
       lines_parsed = 0
+      last_line_parsed, last_pageview_at, lineno_of_last_line_parsed = [nil,nil,nil]
       last_update = Update.order("id DESC").limit(1).first
-      last_pageview_at = last_update ? last_update.last_pageview_at : nil
+
+      if last_update
+        last_pageview_at, last_line_parsed = last_update.last_pageview_at, last_update.last_line_parsed
+        File.new(logfile_path, "r").each_with_index do |line, lineno|
+          if line == last_line_parsed
+            lineno_of_last_line_parsed = lineno
+            break
+          end
+        end
+        puts "last line parsed was\n#{last_line_parsed}\nat lineno #{lineno_of_last_line_parsed}"
+      end
+
       realtime = Benchmark.realtime do
         date_path_pairs_array = []
 
-        File.new(logfile_path, "r").each do |line|
-          path_match = line[path_regexp,1]
+        File.new(logfile_path, "r").each_with_index do |line, lineno|
+          next if lineno_of_last_line_parsed && lineno < lineno_of_last_line_parsed
+
+          path_match = line[path_regexp, 1]
           next if path_match.nil?
-          date_match = line[date_regexp,1]
+          date_match = line[date_regexp, 1]
           next if date_match.nil?
           time_object = parse_string_as_date(date_match)
-          next if !last_pageview_at.nil? && time_object < last_pageview_at
+
+          next if lineno_of_last_line_parsed.nil? && !last_pageview_at.nil? && time_object < last_pageview_at
+
           skinny_jean.insert_or_increment([time_object,path_match])
+          last_line_parsed = line
           lines_parsed += 1
         end
 
@@ -75,9 +93,9 @@ class SkinnyJeans
       
       puts "completed persistence in #{realtime}"
 
-      Update.create!({:last_pageview_at => skinny_jean.last_pageview_at, :lines_parsed => lines_parsed})
+      Update.create!({:last_pageview_at => skinny_jean.last_pageview_at, :lines_parsed => lines_parsed, :last_line_parsed => last_line_parsed})
 
-      puts "total records in DB: #{Pageview.count}, total times parsed: #{Update.count}"
+      puts "total records in DB: #{Pageview.count}\nlines parsed this round: #{lines_parsed}\ntotal SkinnyJeans executions since inception: #{Update.count}"
 
     end
 
