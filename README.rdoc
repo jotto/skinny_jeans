@@ -1,7 +1,7 @@
 = SKINNY JEANS LOG PARSING WITH RUBY & SQLITE FOR HIPSTERS
 http://img696.imageshack.us/img696/75/skinnys3.jpg
 
-== example
+== EXAMPLE
 
 *  your log file has lines that look like
 
@@ -10,9 +10,10 @@ http://img696.imageshack.us/img696/75/skinnys3.jpg
   0.0.0.0 - - [01/Oct/2010:00:00:03 -0700] "GET /posts/my-first-post HTTP/1.1" 200 1337 "-" "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" "-"
   0.0.0.0 - - [02/Oct/2010:00:00:03 -0700] "GET /posts/my-first-post HTTP/1.1" 200 1337 "-" "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" "-"
 
-*  then you get 1 SQL row that looks like:
+*  then you get 2 SQL rows that looks like:
   2010-10-01, my-first-post, 3
   2010-10-02, my-first-post, 1
+*  note the date columns truncate timestamp, so the days are in whatever timezone your log file reports in
 
 
 == WHY?
@@ -20,18 +21,15 @@ http://img696.imageshack.us/img696/75/skinnys3.jpg
 *  because i couldn't find anything simpler and Google Analytics is limited to 10,000 API requests per day
 
 
-== Usage
-  SkinnyJeans::execute(logfile_path = "access.log", sqlite_skinny_jeans = "sqlite_skinny_jeans.db", path_regexp = /\s\/posts\/(.*)\sHTTP/, date_regexp = /\[(\d.*\d)\]/)
-1.  Parse oldest logs first, then run regularly against your main log, let logrotate handle the rest (skinny_jeans remembers where it left off)
-2.  enjoy the skinny jeans
+== USAGE
+  sj = SkinnyJeans::execute(logfile_path = "access.log", sqlite_skinny_jeans = "sqlite_skinny_jeans.db", path_regexp = /\s\/posts\/(.*)\sHTTP/, date_regexp = /\[(\d.*\d)\]/)
+1.  NOTE: for now you have to monkey patch the SkinnyJeans#parse_string_as_date method
+2.  Parse oldest logs first, then run regularly against your main log, let logrotate handle the rest (skinny_jeans remembers where it left off)
+3.  ASSUMES reading log files in ascending order, keeps track of last line read so you could put it on a scheduler or cron job
+4.  access the 2 activerecord classes, sj.pageview (returns Pageview class), and sj.update
+5.  enjoy the skinny jeans
 
 
-== WHAT IT DO
+== PERFORMANCE
 *  it parses 100,000 lines in < 2.5 seconds
-*  persists 1,000 requests with 2 compound indexes in 10 seconds (using home_run c date parser, 15 seconds without home_run)
-
-*  parse a webserver's log file to aggregate paths by DAY with pageview counts
-
-*  creates sqlite database with columns: date, path, pageview_count
-
-*  ASSUMES reading log files in ascending order, keeps track of last line read so you could put it on a scheduler or cron job
+*  persists 1,000 requests with 2 compound indexes in 15 seconds, or 10 seconds with home_run c extension
