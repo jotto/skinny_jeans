@@ -23,7 +23,9 @@ http://img696.imageshack.us/img696/75/skinnys3.jpg
 
 == USAGE
   sj = SkinnyJeans::execute(logfile_path = "access.log", sqlite_skinny_jeans = "sqlite_skinny_jeans.db", path_regexp = /\s\/posts\/(.*)\sHTTP/, date_regexp = /\[(\d.*\d)\]/)
-1.  NOTE: for now you have to monkey patch the SkinnyJeans#parse_string_as_date method
+  sj.pageview.where("date = '2010-10-01' and path = 'my-first-post'")
+  => #<SkinnyJeans::Pageview id: 1, date: "2010-10-01", path: "my-first-post", pageview_count: 3>
+1.  NOTE: for now *you have to monkey patch the SkinnyJeans#parse_string_as_date*
 2.  Parse oldest logs first, then run regularly against your main log, let logrotate handle the rest (skinny_jeans remembers where it left off)
 3.  ASSUMES reading log files in ascending order, keeps track of last line read so you could put it on a scheduler or cron job
 4.  access the 2 activerecord classes, sj.pageview (returns Pageview class), and sj.update
