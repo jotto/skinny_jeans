@@ -3,6 +3,7 @@ require 'benchmark'
 require 'rubygems'
 require 'sqlite3'
 require 'active_record'
+require 'zlib'
 # require 'home_run'
 
 class SkinnyJeans
@@ -15,6 +16,7 @@ class SkinnyJeans
 
   def initialize(logfile_path, sqlite_db_path, path_regexp, date_regexp)
     @logfile_path, @sqlite_db_path, @path_regexp, @date_regexp = [logfile_path, sqlite_db_path, path_regexp, date_regexp]
+    @is_gzipped = !logfile_path.to_s[/gz/].nil?
     prepare_db
     @hash_of_dates = {}
     @last_datetime = nil
@@ -50,9 +52,11 @@ class SkinnyJeans
     last_line_parsed, last_pageview_at, lineno_of_last_line_parsed = [nil,nil,nil]
     last_update = Update.order("id DESC").limit(1).first
 
+    # see if the last_line_parsed parsed exists in the current log file
+    # if it doesnt exist, we'll simply read anything with a timestamp greater than last_pageview_at
     if last_update
       last_pageview_at, last_line_parsed = last_update.last_pageview_at, last_update.last_line_parsed
-      File.new(@logfile_path, "r").each_with_index do |line, lineno|
+      file_reader do |line, lineno|
         if line == last_line_parsed
           lineno_of_last_line_parsed = lineno
           break
@@ -63,8 +67,10 @@ class SkinnyJeans
 
     realtime = Benchmark.realtime do
       date_path_pairs_array = []
+      lineno = -1
 
-      File.new(@logfile_path, "r").each_with_index do |line, lineno|
+      file_reader do |line, index|
+        lineno += 1
         next if lineno_of_last_line_parsed && lineno < lineno_of_last_line_parsed
 
         path_match = line[@path_regexp, 1]
@@ -83,6 +89,7 @@ class SkinnyJeans
 
     puts "completed parsing in #{realtime}"
 
+    persisted = 0
     realtime = Benchmark.realtime do
       hash_of_dates.each do |date, hash_of_paths|
         hash_of_paths.keys.each do |path|
@@ -90,18 +97,28 @@ class SkinnyJeans
           pv.pageview_count ||= 0
           pv.pageview_count += hash_of_paths[path]
           pv.save!
+          persisted += 1
         end
       end
     end
     
     puts "completed persistence in #{realtime}"
 
-    Update.create!({:last_pageview_at => last_pageview_at, :lines_parsed => lines_parsed, :last_line_parsed => last_line_parsed})
+    Update.create!({:last_pageview_at => self.last_pageview_at, :lines_parsed => lines_parsed, :last_line_parsed => last_line_parsed})
 
-    puts "total records in DB: #{Pageview.count}\nlines parsed this round: #{lines_parsed}\ntotal SkinnyJeans executions since inception: #{Update.count}"
+    puts "total records in DB: #{Pageview.count}\nlines parsed this round: #{lines_parsed}\nlines persisted this round:#{persisted}\ntotal SkinnyJeans executions since inception: #{Update.count}"
 
     return self
 
+  end
+
+  def file_reader
+    if @is_gzipped
+      lineno = 0
+      Zlib::GzipReader.open(@logfile_path){|line|yield([line.read,lineno]);lineno+=1}
+    else
+      File.new(@logfile_path, "r").each_with_index{|line, lineno| yield([line,lineno])}
+    end
   end
 
   def pageview;get_ar_class(Pageview);end
