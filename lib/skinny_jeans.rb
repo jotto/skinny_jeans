@@ -116,7 +116,8 @@ class SkinnyJeans
   def file_reader
     if @is_gzipped
       lineno = 0
-      Zlib::GzipReader.open(@logfile_path){|line|yield([line.read,lineno]);lineno+=1}
+      Zlib::GzipReader.new(File.new(@logfile_path, "r")).each_line{|line|yield([line,lineno]);lineno+=1}
+      # Zlib::GzipReader.open(@logfile_path).each_line{|line|yield([line,lineno]);lineno+=1}
     else
       File.new(@logfile_path, "r").each_with_index{|line, lineno| yield([line,lineno])}
     end
