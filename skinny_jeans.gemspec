@@ -4,7 +4,7 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |s|
-  s.name = %q{skinny-jeans}
+  s.name = %q{skinny_jeans}
   s.version = "0.2.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
@@ -22,7 +22,7 @@ Gem::Specification.new do |s|
      "lib/skinny_jeans.rb",
      "skinny-jeans.gemspec"
   ]
-  s.homepage = %q{http://github.com/jotto/skinny-jeans}
+  s.homepage = %q{http://github.com/jotto/skinny_jeans}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.7}
