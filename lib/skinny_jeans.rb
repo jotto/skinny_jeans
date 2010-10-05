@@ -50,7 +50,8 @@ class SkinnyJeans
 
     lines_parsed = 0
     last_line_parsed, last_pageview_at, lineno_of_last_line_parsed = [nil,nil,nil]
-    last_update = Update.order("id DESC").limit(1).first
+    # last_update = Update.order("id DESC").limit(1).first
+    last_update = Update.find(:first, :order => "id DESC", :limit => 1)
 
     # see if the last_line_parsed parsed exists in the current log file
     # if it doesnt exist, we'll simply read anything with a timestamp greater than last_pageview_at
