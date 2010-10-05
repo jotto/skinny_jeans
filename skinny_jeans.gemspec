@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{skinny_jeans}
-  s.version = "0.2.1"
+  s.version = "0.2.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jonathan Otto"]
@@ -20,7 +20,7 @@ Gem::Specification.new do |s|
      "Rakefile",
      "VERSION",
      "lib/skinny_jeans.rb",
-     "skinny-jeans.gemspec"
+     "skinny_jeans.gemspec"
   ]
   s.homepage = %q{http://github.com/jotto/skinny_jeans}
   s.rdoc_options = ["--charset=UTF-8"]
