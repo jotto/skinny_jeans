@@ -10,7 +10,7 @@ http://img696.imageshack.us/img696/75/skinnys3.jpg
   0.0.0.0 - - [01/Oct/2010:00:00:03 -0700] "GET /posts/my-first-post HTTP/1.1" 200 1337 "-" "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" "-"
   0.0.0.0 - - [02/Oct/2010:00:00:03 -0700] "GET /posts/my-first-post HTTP/1.1" 200 1337 "-" "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" "-"
 
-*  then you get 2 SQL rows that looks like:
+*  then you get 2 SQL rows that look like:
   2010-10-01, my-first-post, 3
   2010-10-02, my-first-post, 1
 *  note the date columns truncate timestamp, so the days are in whatever timezone your log file reports in
@@ -25,7 +25,7 @@ http://img696.imageshack.us/img696/75/skinnys3.jpg
   sj = SkinnyJeans::execute(logfile_path = "access.log", sqlite_skinny_jeans = "sqlite_skinny_jeans.db", path_regexp = /\s\/posts\/(.*)\sHTTP/, date_regexp = /\[(\d.*\d)\]/)
   sj.pageview.where("date = '2010-10-01' and path = 'my-first-post'")
   => #<SkinnyJeans::Pageview id: 1, date: "2010-10-01", path: "my-first-post", pageview_count: 3>
-1.  NOTE: for now *you have to monkey patch the SkinnyJeans#parse_string_as_date*
+1.  NOTE: for now **you have to monkey patch the SkinnyJeans#parse_string_as_date**
 2.  Parse oldest logs first, then run regularly against your main log, let logrotate handle the rest (skinny_jeans remembers where it left off)
 3.  ASSUMES reading log files in ascending order, keeps track of last line read so you could put it on a scheduler or cron job
 4.  access the 2 activerecord classes, sj.pageview (returns Pageview class), and sj.update
@@ -35,3 +35,8 @@ http://img696.imageshack.us/img696/75/skinnys3.jpg
 == PERFORMANCE
 *  it parses 100,000 lines in < 2.5 seconds
 *  persists 1,000 requests with 2 compound indexes in 15 seconds, or 10 seconds with home_run c extension
+*  25,000 rows == 4 megabyte sqlite database
+
+== NOTES
+*  supports gzipped files
+*  creates a temp copy of the log file before parsing

@@ -4,6 +4,7 @@ require 'rubygems'
 require 'sqlite3'
 require 'active_record'
 require 'zlib'
+require 'fileutils'
 # require 'home_run'
 
 class SkinnyJeans
@@ -113,14 +114,21 @@ class SkinnyJeans
 
   end
 
+  # copies the log file, reads it, then removes it
   def file_reader
+
+    temp_file_path = "#{@logfile_path}.copy"
+    temp_file = FileUtils.cp(@logfile_path, temp_file_path)
+
     if @is_gzipped
       lineno = 0
-      Zlib::GzipReader.new(File.new(@logfile_path, "r")).each_line{|line|yield([line,lineno]);lineno+=1}
+      Zlib::GzipReader.new(File.new(temp_file_path, "r")).each_line{|line|yield([line,lineno]);lineno+=1}
       # Zlib::GzipReader.open(@logfile_path).each_line{|line|yield([line,lineno]);lineno+=1}
     else
-      File.new(@logfile_path, "r").each_with_index{|line, lineno| yield([line,lineno])}
+      File.new(temp_file_path, "r").each_with_index{|line, lineno| yield([line,lineno])}
     end
+
+    FileUtils.rm_f(temp_file_path)
   end
 
   def pageview;get_ar_class(Pageview);end
