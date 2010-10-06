@@ -23,23 +23,27 @@ class SkinnyJeans
     @last_datetime = nil
   end
 
+  class SkinnyJeanDb < ActiveRecord::Base
+    self.abstract_class = true
+  end
+
   def prepare_db
     # create database if necessary
     SQLite3::Database.new(@sqlite_db_path)
-    ActiveRecord::Base.establish_connection(:adapter => 'sqlite3', :database => @sqlite_db_path)
+    SkinnyJeanDb.establish_connection(:adapter => 'sqlite3', :database => @sqlite_db_path)
     # create tables if necessary
     if !Pageview.table_exists?
-      ActiveRecord::Base.connection.create_table(:pageviews) do |t|
+      SkinnyJeanDb.connection.create_table(:pageviews) do |t|
         t.column :date, :date
         t.column :path, :string
         t.column :pageview_count, :integer
       end
       # flow tight like skinny jeans with these compound indexes
-      ActiveRecord::Base.connection.add_index(:pageviews, [:date, :path], :name => "date_path_index")
-      ActiveRecord::Base.connection.add_index(:pageviews, [:date, :pageview_count], :name => "date_pageview_count_index")
+      SkinnyJeanDb.connection.add_index(:pageviews, [:date, :path], :name => "date_path_index")
+      SkinnyJeanDb.connection.add_index(:pageviews, [:date, :pageview_count], :name => "date_pageview_count_index")
     end
     if !Update.table_exists?
-      ActiveRecord::Base.connection.create_table(:updates) do |t|
+      SkinnyJeanDb.connection.create_table(:updates) do |t|
         t.column :last_pageview_at, :timestamp
         t.column :lines_parsed, :integer
         t.column :last_line_parsed, :string
@@ -155,9 +159,9 @@ class SkinnyJeans
     @last_pageview_at = datetime
   end
 
-  class Pageview < ActiveRecord::Base
+  class Pageview < SkinnyJeanDb
   end
-  class Update < ActiveRecord::Base
+  class Update < SkinnyJeanDb
   end
 
 
