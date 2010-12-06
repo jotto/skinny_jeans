@@ -63,7 +63,7 @@ class SkinnyJeans
     if last_update
       last_pageview_at, last_line_parsed = last_update.last_pageview_at, last_update.last_line_parsed
       file_reader do |line, lineno|
-        if line == last_line_parsed
+        if line.to_s[0..254] == last_line_parsed.to_s[0..254]
           lineno_of_last_line_parsed = lineno
           break
         end
@@ -77,7 +77,7 @@ class SkinnyJeans
 
       file_reader do |line, index|
         lineno += 1
-        next if lineno_of_last_line_parsed && lineno < lineno_of_last_line_parsed
+        next if lineno_of_last_line_parsed && lineno <= lineno_of_last_line_parsed
 
         path_match = line[@path_regexp, 1]
         next if path_match.nil?
@@ -88,7 +88,7 @@ class SkinnyJeans
         next if lineno_of_last_line_parsed.nil? && !last_pageview_at.nil? && time_object < last_pageview_at
 
         insert_or_increment([time_object,path_match])
-        last_line_parsed = line
+        last_line_parsed = line.to_s[0..254]
         lines_parsed += 1
       end
     end
@@ -110,7 +110,7 @@ class SkinnyJeans
     
     puts "completed persistence in #{realtime}"
 
-    Update.create!({:last_pageview_at => self.last_pageview_at, :lines_parsed => lines_parsed, :last_line_parsed => last_line_parsed})
+    Update.create!({:last_pageview_at => self.last_pageview_at, :lines_parsed => lines_parsed, :last_line_parsed => last_line_parsed.to_s[0..254]})
 
     puts "total records in DB: #{Pageview.count}\nlines parsed this round: #{lines_parsed}\nlines persisted this round:#{persisted}\ntotal SkinnyJeans executions since inception: #{Update.count}"
 
