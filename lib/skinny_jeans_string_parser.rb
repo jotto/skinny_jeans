@@ -42,7 +42,7 @@ class SkinnyJeansStringParser
   # pre: like http://example.org?q=cool&fun=no, "fun"
   # post: "no"
   def return_param_from_url(url, param_name)
-    _uri = URI.parse(url)
+    _uri = URI.parse(URI.encode(url))
     if _uri.query.present?
       _cgi = CGI.parse(_uri.query)
       return _cgi[param_name].to_s.strip if _cgi[param_name]
