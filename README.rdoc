@@ -22,6 +22,7 @@ http://img696.imageshack.us/img696/75/skinnys3.jpg
 
 == WHY?
 *  so you can query a database by date and path and get pageviews and have that data stored CHEAP
+*  so you can query a database by date and path and SEARCH KEYWORD
 *  because i couldn't find anything simpler and Google Analytics is limited to 10,000 API requests per day
 
 
@@ -36,7 +37,7 @@ http://img696.imageshack.us/img696/75/skinnys3.jpg
 5.  enjoy the skinny jeans
 
 
-== PERFORMANCE
+== PERFORMANCE (without organic search tracking)
 *  it parses 100,000 lines in < 2.5 seconds
 *  persists 1,000 requests with 2 compound indexes in 15 seconds, or 10 seconds with home_run c extension
 *  25,000 rows == 4 megabyte sqlite database
@@ -45,5 +46,5 @@ http://img696.imageshack.us/img696/75/skinnys3.jpg
 *  supports gzipped files
 *  creates a temp copy of the log file before parsing
 *  currently requires each line to be unique
- *  this could be a problem if a single client manages to hit the same page more than once in less than 1 second.
- *  this is only a problem if the last line parsed is one of the pages that was hit by the same client more than once in less than one second
+  *  this could be a problem if a single client manages to hit the same page more than once in less than 1 second.
+  *  this is only a problem if the last line parsed is one of the pages that was hit by the same client more than once in less than one second

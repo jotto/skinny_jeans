@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{skinny_jeans}
-  s.version = "0.4.0"
+  s.version = "0.5.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jonathan Otto"]
-  s.date = %q{2010-10-06}
+  s.date = %q{2010-12-06}
   s.email = %q{jonathan.otto@gmail.com}
   s.extra_rdoc_files = [
     "README.rdoc",
@@ -22,6 +22,7 @@ Gem::Specification.new do |s|
      "TODO",
      "VERSION",
      "lib/skinny_jeans.rb",
+     "lib/skinny_jeans_string_parser.rb",
      "skinny_jeans.gemspec"
   ]
   s.homepage = %q{http://github.com/jotto/skinny_jeans}
@@ -29,6 +30,10 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.7}
   s.summary = %q{Fast webserver log parser for persisting daily pageviews per path to sqlite}
+  s.test_files = [
+    "test/skinny_jeans_string_parser_test.rb",
+     "test/skinny_jeans_test.rb"
+  ]
 
   if s.respond_to? :specification_version then
     current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
