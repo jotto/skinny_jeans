@@ -5,6 +5,9 @@ require 'sqlite3'
 require 'active_record'
 require 'zlib'
 require 'fileutils'
+require 'uri'
+require 'cgi'
+require 'skinny_jeans_string_parser'
 # require 'home_run'
 
 class SkinnyJeans
@@ -13,13 +16,14 @@ class SkinnyJeans
     self.new(logfile_path, sqlite_db_path, path_regexp, date_regexp).execute
   end
 
-  attr_accessor :hash_of_dates, :last_pageview_at
+  attr_accessor :hash_of_dates, :hash_of_dates_for_keywords, :last_pageview_at
 
   def initialize(logfile_path, sqlite_db_path, path_regexp, date_regexp)
     @logfile_path, @sqlite_db_path, @path_regexp, @date_regexp = [logfile_path, sqlite_db_path, path_regexp, date_regexp]
     @is_gzipped = !logfile_path.to_s[/gz/].nil?
     prepare_db
     @hash_of_dates = {}
+    @hash_of_dates_for_keywords = {}
     @last_datetime = nil
   end
 
@@ -49,6 +53,19 @@ class SkinnyJeans
         t.column :last_line_parsed, :string
       end
     end
+
+    # addition from 2010-12-06 to track search traffic specifically
+    if !PageviewKeyword.table_exists?
+      SkinnyJeanDb.connection.create_table(:pageview_keywords) do |t|
+        t.column :date, :date
+        t.column :path, :string
+        t.column :pageview_count, :integer
+        t.column :keyword, :string
+      end
+      SkinnyJeanDb.connection.add_index(:pageview_keywords, [:date, :path, :keyword], :name => "date_path_keyword_index")
+      # SkinnyJeanDb.connection.add_index(:pageview_keywords, [:date, :pageview_count], :name => "date_pageview_count_index")
+    end
+
   end
 
   def execute
@@ -83,12 +100,13 @@ class SkinnyJeans
         next if path_match.nil?
         date_match = line[@date_regexp, 1]
         next if date_match.nil?
-        time_object = parse_string_as_date(date_match)
+        datetime_obj = parse_string_as_date(date_match)
 
-        next if lineno_of_last_line_parsed.nil? && !last_pageview_at.nil? && time_object < last_pageview_at
+        next if lineno_of_last_line_parsed.nil? && !last_pageview_at.nil? && datetime_obj < last_pageview_at
 
-        insert_or_increment([time_object,path_match])
-        last_line_parsed = line.to_s[0..254]
+        insert_or_increment(datetime_obj, path_match, SkinnyJeansStringParser.extract_search_query(line))
+        @last_pageview_at = datetime_obj
+        last_line_parsed = line.to_s[0..254] # only 255 characters because we store it in the database
         lines_parsed += 1
       end
     end
@@ -96,7 +114,9 @@ class SkinnyJeans
     puts "completed parsing in #{realtime}"
 
     persisted = 0
+    persisted_pageview_keywords = 0
     realtime = Benchmark.realtime do
+
       hash_of_dates.each do |date, hash_of_paths|
         hash_of_paths.keys.each do |path|
           pv = Pageview.find_or_create_by_date_and_path(date, path)
@@ -106,13 +126,30 @@ class SkinnyJeans
           persisted += 1
         end
       end
+
+      hash_of_dates_for_keywords.each do |date, hash_of_paths|
+        hash_of_paths.keys.each do |path|
+          hash_of_paths[path].keys.each do |keyword|
+            pvk = PageviewKeyword.find_or_create_by_date_and_path_and_keyword(date, path, keyword)
+            pvk.keyword = keyword.to_s[0..254]
+            pvk.pageview_count ||= 0
+            pvk.pageview_count += hash_of_paths[path][keyword]
+            pvk.save!
+            persisted_pageview_keywords += 1
+          end
+        end
+      end
+
     end
-    
+
     puts "completed persistence in #{realtime}"
 
     Update.create!({:last_pageview_at => self.last_pageview_at, :lines_parsed => lines_parsed, :last_line_parsed => last_line_parsed.to_s[0..254]})
 
-    puts "total records in DB: #{Pageview.count}\nlines parsed this round: #{lines_parsed}\nlines persisted this round:#{persisted}\ntotal SkinnyJeans executions since inception: #{Update.count}"
+    puts("total records in DB: #{Pageview.count}
+lines parsed this round: #{lines_parsed}
+lines persisted this round:#{persisted}
+total SkinnyJeans executions since inception: #{Update.count}")
 
     return self
 
@@ -137,6 +174,7 @@ class SkinnyJeans
 
   def pageview;get_ar_class(Pageview);end
   def update;get_ar_class(Update);end
+  def pageview_keyword;get_ar_class(PageviewKeyword);end
 
   def get_ar_class(klass)
     begin;return(klass);rescue(ActiveRecord::ConnectionNotEstablished);prepare_db;end
@@ -150,20 +188,31 @@ class SkinnyJeans
     Time.parse("#{year}-#{month}-#{day} #{hour}:#{minute}:#{seconds} #{zone}")
   end
 
-  def insert_or_increment(date_path_pair)
-    datetime, path = date_path_pair
-    date = datetime.strftime(("%Y-%m-%d"))
-    hash_of_dates[date] ||= {}
-    hash_of_dates[date][path] ||= 0
-    hash_of_dates[date][path] += 1
-    @last_pageview_at = datetime
+  def insert_or_increment(_datetime_obj, _path, _search_keyword = nil)
+
+    date_string = _datetime_obj.strftime(("%Y-%m-%d"))
+
+    # data for all pageviews
+    hash_of_dates[date_string] ||= {}
+    hash_of_dates[date_string][_path] ||= 0
+    hash_of_dates[date_string][_path] += 1
+
+    return if _search_keyword.nil?
+
+    # data for just pageviews coming from search
+    hash_of_dates_for_keywords[date_string] ||= {}
+    hash_of_dates_for_keywords[date_string][_path] ||= {}
+    hash_of_dates_for_keywords[date_string][_path][_search_keyword] ||= 0
+    hash_of_dates_for_keywords[date_string][_path][_search_keyword] += 1
+
   end
 
   class Pageview < SkinnyJeanDb
   end
+  class PageviewKeyword < SkinnyJeanDb
+  end
   class Update < SkinnyJeanDb
   end
-
 
 end
 

@@ -9,10 +9,14 @@ http://img696.imageshack.us/img696/75/skinnys3.jpg
   0.0.0.0 - - [01/Oct/2010:00:00:01 -0700] "GET /posts/my-first-post HTTP/1.1" 200 1337 "-" "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" "-"
   0.0.0.0 - - [01/Oct/2010:00:00:03 -0700] "GET /posts/my-first-post HTTP/1.1" 200 1337 "-" "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" "-"
   0.0.0.0 - - [02/Oct/2010:00:00:03 -0700] "GET /posts/my-first-post HTTP/1.1" 200 1337 "-" "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" "-"
+  0.0.0.0 - - [02/Oct/2010:00:00:04 -0700] "GET /posts/my-first-post HTTP/1.1" 200 1337 "-" "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/?q=some+stuff)" "-"
+  0.0.0.0 - - [02/Oct/2010:00:00:05 -0700] "GET /posts/my-first-post HTTP/1.1" 200 1337 "-" "Mozilla/5.0 (compatible; Googlebot/2.1; +http://search.yahoo.com/?p=some+stuff)" "-"
 
-*  then you get 2 SQL rows that look like:
+*  then you get 2 SQL rows in the pageviews table that look like:
   2010-10-01, my-first-post, 3
   2010-10-02, my-first-post, 1
+*  and 1 SQL row in the pageview_keywords table that look like: (search referrals ONLY, but... WITH keyword tracking)
+  2010-10-02, "my-first-post", 2, "some stuff"
 *  note the date columns truncate timestamp, so the days are in whatever timezone your log file reports in
 
 
@@ -40,3 +44,6 @@ http://img696.imageshack.us/img696/75/skinnys3.jpg
 == NOTES
 *  supports gzipped files
 *  creates a temp copy of the log file before parsing
+*  currently requires each line to be unique
+ *  this could be a problem if a single client manages to hit the same page more than once in less than 1 second.
+ *  this is only a problem if the last line parsed is one of the pages that was hit by the same client more than once in less than one second
