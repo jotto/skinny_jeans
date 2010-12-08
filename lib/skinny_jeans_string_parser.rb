@@ -45,7 +45,10 @@ class SkinnyJeansStringParser
     _uri = URI.parse(URI.encode(url))
     if _uri.query.present?
       _cgi = CGI.parse(_uri.query)
-      return _cgi[param_name].to_s.strip if _cgi[param_name]
+      if _cgi[param_name]
+        val = unescape_string(_cgi[param_name].to_s).strip.downcase
+        return (!val.nil? && val!='' ? val : nil)
+      end
     end
     return nil
   end
@@ -55,5 +58,13 @@ class SkinnyJeansStringParser
     @all_urls ||= string_value.split(/\s+/).reject { |_string| !_string.match(/^['"]?https?:['"]?/) }.collect { |url| url.gsub(/["']/,'') }
     @all_urls.empty? ? nil : @all_urls
   end
+
+  private
+  def unescape_string(_string)
+    temp = _string.dup
+    temp = CGI.unescape(temp) while CGI.unescape(temp) != temp
+    temp
+  end
+
 
 end
