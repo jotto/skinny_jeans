@@ -2,7 +2,7 @@
 # SkinnyJeans::StringParser.extract_search_query("http://search.aol.com/aol/search?enabled_terms=&s_it=comsearch50&q=cool+stuff")
 # => "cool stuff"
 
-class SkinnyJeans
+module SkinnyJeans
   class StringParser
 
     class << self
@@ -38,7 +38,7 @@ class SkinnyJeans
         if _uri.query.present?
           _cgi = CGI.parse(_uri.query)
           if _cgi[param_name]
-            val = unescape_string(_cgi[param_name].to_s).strip.downcase
+            val = unescape_string(_cgi[param_name].join).strip.downcase
             return (!val.nil? && val!='' ? val : nil)
           end
         end
