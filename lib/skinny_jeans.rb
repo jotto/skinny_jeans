@@ -7,7 +7,7 @@ require 'zlib'
 require 'fileutils'
 require 'uri'
 require 'cgi'
-require 'skinny_jeans_string_parser'
+require File.expand_path(File.dirname(__FILE__) + "/skinny_jeans/skinny_jeans_string_parser")
 # require 'home_run'
 
 class SkinnyJeans
@@ -104,7 +104,7 @@ class SkinnyJeans
 
         next if lineno_of_last_line_parsed.nil? && !last_pageview_at.nil? && datetime_obj < last_pageview_at
 
-        insert_or_increment(datetime_obj, path_match, SkinnyJeansStringParser.extract_search_query(line))
+        insert_or_increment(datetime_obj, path_match, SkinnyJeans::StringParser.extract_search_query(line))
         @last_pageview_at = datetime_obj
         last_line_parsed = line.to_s[0..254] # only 255 characters because we store it in the database
         lines_parsed += 1
