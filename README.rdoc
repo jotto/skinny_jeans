@@ -27,7 +27,7 @@ http://img696.imageshack.us/img696/75/skinnys3.jpg
 
 
 == USAGE
-  sj = SkinnyJeans::execute(logfile_path = "access.log", sqlite_skinny_jeans = "sqlite_skinny_jeans.db", path_regexp = /\s\/posts\/(.*)\sHTTP/, date_regexp = /\[(\d.*\d)\]/)
+  sj = SkinnyJeans::LogParser::execute(logfile_path = "access.log", sqlite_skinny_jeans = "sqlite_skinny_jeans.db", path_regexp = /\s\/posts\/(.*)\sHTTP/, date_regexp = /\[(\d.*\d)\]/)
   sj.pageview.where("date = '2010-10-01' and path = 'my-first-post'")
   => #<SkinnyJeans::Pageview id: 1, date: "2010-10-01", path: "my-first-post", pageview_count: 3>
 1.  NOTE: for now **you have to monkey patch the SkinnyJeans#parse_string_as_date**
