@@ -59,7 +59,10 @@ module SkinnyJeans
 
     # find all URLs in a string that are at beginning or end of string or are tokenized by spaces
     def all_urls
-      @all_urls ||= string_value.split(/\s+/).reject { |_string| !_string.match(/^['"]?https?:['"]?/) }.collect { |url| url.gsub(/["']/,'') }
+      # tokenize a string by space
+        # find strings starting with http with optional enclosing quotes
+        # remove those quotes from any matches
+      @all_urls ||= string_value.split(/\s+/).reject { |_string| !_string.match(/^['"]?https?:['"]?/) }.collect { |url| url.gsub(/\A["']/,'') }.collect { |url| url.gsub(/["']\z/,'') }
       @all_urls.empty? ? nil : @all_urls
     end
 
