@@ -4,6 +4,7 @@ begin
   Jeweler::Tasks.new do |s|
     s.name = "skinny_jeans"
     s.summary = "Fast webserver log parser for persisting daily pageviews per path to sqlite"
+    s.description = "Fast webserver log parser for persisting daily pageviews per path to sqlite"
     s.email = "jonathan.otto@gmail.com"
     s.homepage = "http://github.com/jotto/skinny_jeans"
     s.authors = ["Jonathan Otto"]
