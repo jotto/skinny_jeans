@@ -25,6 +25,8 @@ module SkinnyJeans
           val=return_param_from_valid_url_or_path(url,"q")
         when /bing\.com/
           val=return_param_from_valid_url_or_path(url,"q")
+        when /search\-results\.com/
+          val=return_param_from_valid_url_or_path(url,"q")
         end
         # whitelist of acceptable characters
         val = val.present? && val.gsub(/[^0-9A-Za-z\s"'!@#\$%\^&\*\(\)\?\<\>\[\]:;,\.+-_=]/, '') != val ? nil : val
