@@ -134,7 +134,9 @@ module SkinnyJeans
 
     # return a ruby Time object
     def parse_string_as_date(date_string = "02/Oct/2010:11:17:44 -0700")
-      day,month,year,hour,minute,seconds,zone = date_string.scan(/(\d{1,2})\/(\w{3,5})\/(\d{4}):(\d\d):(\d\d):(\d\d)\s(-?\d{3,4})/).flatten
+      # "02/Oct/2010:11:17:44 -0700"
+      # "13/Feb/2011:22:18:39 +0000"
+      day,month,year,hour,minute,seconds,zone = date_string.scan(/(\d{1,2})\/(\w{3,5})\/(\d{4}):(\d\d):(\d\d):(\d\d)\s([-\+]?\d{3,4})/).flatten
       Time.parse("#{year}-#{month}-#{day} #{hour}:#{minute}:#{seconds} #{zone}")
     end
 
