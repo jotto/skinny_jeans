@@ -108,7 +108,7 @@ module SkinnyJeans
     # copies the log file, reads it, then removes it
     def file_reader
 
-      temp_file_path = "#{@logfile_path}.copy"
+      temp_file_path = ("/tmp/"<<File.basename("#{@logfile_path}.copy"))
       temp_file = FileUtils.cp(@logfile_path, temp_file_path)
 
       if @is_gzipped
