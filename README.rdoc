@@ -17,7 +17,7 @@ http://img696.imageshack.us/img696/75/skinnys3.jpg
   2010-10-02, my-first-post, 1
 *  and 1 SQL row in the pageview_keywords table that look like: (search referrals ONLY, but... WITH keyword tracking)
   2010-10-02, "my-first-post", 2, "some stuff"
-*  note the date columns truncate timestamp, so the days are in whatever timezone your log file reports in
+*  as long as you have the time zone in the log file, the timestamp will be converted and persisted as utc
 
 
 == WHY?
