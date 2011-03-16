@@ -46,12 +46,21 @@ module SkinnyJeans
           lineno += 1
           next if lineno_of_last_line_parsed && lineno <= lineno_of_last_line_parsed
 
-          path_match = line[@path_regexp, 1]
-          next if path_match.nil?
-          date_match = line[@date_regexp, 1]
-          next if date_match.nil?
-          datetime_obj = parse_string_as_date(date_match)
-
+          begin
+            path_match = line[@path_regexp, 1]
+            next if path_match.nil?
+            date_match = line[@date_regexp, 1]
+            next if date_match.nil?
+            datetime_obj = parse_string_as_date(date_match)
+          rescue ArgumentError => e
+            if e.message.match(/invalid byte sequence in UTF-8/)
+              puts "failed to parse the following line because of #{e.class.name}: #{e.message}"
+              puts line
+              next
+            else
+              raise(e)
+            end
+          end
           next if lineno_of_last_line_parsed.nil? && !last_pageview_at.nil? && datetime_obj < last_pageview_at
 
           insert_or_increment(datetime_obj, path_match, SkinnyJeans::StringParser.extract_search_query(line))
@@ -68,7 +77,9 @@ module SkinnyJeans
       realtime = Benchmark.realtime do
 
         hash_of_dates.each do |date, hash_of_paths|
-          hash_of_paths.keys.each do |path|
+          puts "on date #{date.inspect} with #{hash_of_paths.keys.size} keys"
+          hash_of_paths.keys.each_with_index do |path, index|
+            # puts "path is #{path}, #{index.to_f/hash_of_paths.keys.size.to_f}"
             pv = Pageview.find_or_create_by_date_and_path(date, path)
             pv.pageview_count ||= 0
             pv.pageview_count += hash_of_paths[path]
@@ -76,7 +87,7 @@ module SkinnyJeans
             persisted += 1
           end
         end
-
+# puts "now doing osk"
         hash_of_dates_for_keywords.each do |date, hash_of_paths|
           hash_of_paths.keys.each do |path|
             hash_of_paths[path].keys.each do |keyword|
