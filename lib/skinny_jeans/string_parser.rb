@@ -29,7 +29,7 @@ module SkinnyJeans
           val=return_param_from_valid_url_or_path(url,"q")
         end
         # whitelist of acceptable characters
-        val = val.present? && val.gsub(/[^0-9A-Za-z\s"'!@#\$%\^&\*\(\)\?\<\>\[\]:;,\.+-_=]/, '') != val ? nil : val
+        val = !!val && val.gsub(/[^0-9A-Za-z\s"'!@#\$%\^&\*\(\)\?\<\>\[\]:;,\.+-_=]/, '') != val ? nil : val
         return val
       end
 
@@ -40,18 +40,13 @@ module SkinnyJeans
         if _uri.query.present?
           _cgi = CGI.parse(_uri.query)
           if _cgi[param_name]
-            val = unescape_string(_cgi[param_name].join).strip.downcase
+            val = URI.decode(_cgi[param_name].join).strip.downcase
             return (!val.nil? && val!='' ? val : nil)
           end
         end
         return nil
       end
 
-      def unescape_string(_string)
-        temp = _string.dup
-        temp = CGI.unescape(temp) while CGI.unescape(temp) != temp
-        temp
-      end
     end
 
     attr_accessor :string_value
