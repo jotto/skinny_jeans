@@ -137,6 +137,10 @@ puts("vacuuming DB")
 SkinnyJeans::SkinnyJeanDb.connection.execute("VACUUM")
 puts("vacuuming complete")
 
+# i dont think we need to keep these now that we've successfully persisted
+@hash_of_dates = nil
+@hash_of_dates_for_keywords = nil
+
       return self
 
     end
