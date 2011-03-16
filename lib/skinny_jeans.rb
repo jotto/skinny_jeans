@@ -7,6 +7,7 @@ require 'cgi'
 require 'rubygems'
 require 'active_record'
 require 'sqlite3'
+require 'spinner'
 require File.expand_path(File.dirname(__FILE__) + "/skinny_jeans/string_parser")
 require File.expand_path(File.dirname(__FILE__) + "/skinny_jeans/log_parser")
 # require 'home_run'

@@ -77,28 +77,37 @@ module SkinnyJeans
       realtime = Benchmark.realtime do
 
         hash_of_dates.each do |date, hash_of_paths|
-          puts "on date #{date.inspect} with #{hash_of_paths.keys.size} keys"
-          hash_of_paths.keys.each_with_index do |path, index|
-            # puts "path is #{path}, #{index.to_f/hash_of_paths.keys.size.to_f}"
-            pv = Pageview.find_or_create_by_date_and_path(date, path)
-            pv.pageview_count ||= 0
-            pv.pageview_count += hash_of_paths[path]
-            pv.save!
-            persisted += 1
-          end
-        end
-# puts "now doing osk"
-        hash_of_dates_for_keywords.each do |date, hash_of_paths|
-          hash_of_paths.keys.each do |path|
-            hash_of_paths[path].keys.each do |keyword|
-              pvk = PageviewKeyword.find_or_create_by_date_and_path_and_keyword(date, path, keyword)
-              pvk.keyword = keyword.to_s[0..254]
-              pvk.pageview_count ||= 0
-              pvk.pageview_count += hash_of_paths[path][keyword]
-              pvk.save!
-              persisted_pageview_keywords += 1
+
+          Spinner::with_spinner(:count=>hash_of_paths.keys.size, :message=>"Inserting rows into database for pageviews #{date}...") do |spin|
+            hash_of_paths.keys.each_with_index do |path, index|
+              # puts "path is #{path}, #{index.to_f/hash_of_paths.keys.size.to_f}"
+              pv = Pageview.find_or_create_by_date_and_path(date, path)
+              pv.pageview_count ||= 0
+              pv.pageview_count += hash_of_paths[path]
+              pv.save!
+              persisted += 1
+              spin.call
             end
           end
+          puts "completed pageviews date #{date.inspect} with #{hash_of_paths.keys.size} keys"
+
+        end
+
+        hash_of_dates_for_keywords.each do |date, hash_of_paths|
+          Spinner::with_spinner(:count=>hash_of_paths.keys.size, :message=>"Inserting rows into database for pageview_keywords #{date}...") do |spin|
+            hash_of_paths.keys.each do |path|
+              hash_of_paths[path].keys.each do |keyword|
+                pvk = PageviewKeyword.find_or_create_by_date_and_path_and_keyword(date, path, keyword)
+                pvk.keyword = keyword.to_s[0..254]
+                pvk.pageview_count ||= 0
+                pvk.pageview_count += hash_of_paths[path][keyword]
+                pvk.save!
+                persisted_pageview_keywords += 1
+              end
+              spin.call
+            end
+          end
+          puts "completed pageview_keywords date #{date.inspect} with #{hash_of_paths.keys.size} keys"
         end
 
       end
