@@ -23,7 +23,7 @@ module SkinnyJeans
     end
 
 
-    def execute
+    def execute(options = {})
 
       lines_parsed = 0
       last_line_parsed, last_pageview_at, lineno_of_last_line_parsed = [nil,nil,nil]
@@ -133,9 +133,12 @@ puts("total records in DB: #{Pageview.count}
 lines parsed this round: #{lines_parsed}
 lines persisted this round:#{persisted}
 total SkinnyJeans executions since inception: #{Update.count}")
-puts("vacuuming DB")
-SkinnyJeans::SkinnyJeanDb.connection.execute("VACUUM")
-puts("vacuuming complete")
+
+if options[:vacuum]
+  puts("vacuuming DB")
+  SkinnyJeans::SkinnyJeanDb.connection.execute("VACUUM") 
+  puts("vacuuming complete")
+end
 
 # i dont think we need to keep these now that we've successfully persisted
 @hash_of_dates = nil
