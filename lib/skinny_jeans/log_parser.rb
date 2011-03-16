@@ -12,6 +12,11 @@ module SkinnyJeans
       @logfile_path, @sqlite_db_path, @path_regexp, @date_regexp = [logfile_path, sqlite_db_path, path_regexp, date_regexp]
       @is_gzipped = !logfile_path.to_s[/gz/].nil?
       SkinnyJeans::prepare_db(@sqlite_db_path)
+
+      # in my tests, setting synchronous=1 (or even 0) had little or no speed gain
+      # but I leave it at one for situations with poor IO
+      SkinnyJeans::SkinnyJeanDb.connection.execute("PRAGMA synchronous=1")
+
       @hash_of_dates = {}
       @hash_of_dates_for_keywords = {}
       @last_datetime = nil
@@ -78,7 +83,9 @@ module SkinnyJeans
 
         hash_of_dates.each do |date, hash_of_paths|
 
-          Spinner::with_spinner(:count=>hash_of_paths.keys.size, :message=>"Inserting rows into database for pageviews #{date}...") do |spin|
+        Pageview.transaction do
+        realtime = Benchmark.realtime do
+        Spinner::with_spinner(:count=>hash_of_paths.keys.size, :message=>"Inserting rows into database for pageviews #{date}...") do |spin|
             hash_of_paths.keys.each_with_index do |path, index|
               pv = Pageview.find_or_create_by_date_and_path(date, path)
               pv.pageview_count ||= 0
@@ -87,12 +94,17 @@ module SkinnyJeans
               persisted += 1
               spin.call
             end
-          end
-          puts "completed pageviews date #{date.inspect} with #{hash_of_paths.keys.size} keys"
+        end
+        end
+        end
+
+        puts "completed pageviews date #{date.inspect} with #{hash_of_paths.keys.size} keys in #{realtime}"
 
         end
 
         hash_of_dates_for_keywords.each do |date, hash_of_paths|
+          PageviewKeyword.transaction do
+          realtime = Benchmark.realtime do
           Spinner::with_spinner(:count=>hash_of_paths.keys.size, :message=>"Inserting rows into database for pageview_keywords #{date}...") do |spin|
             hash_of_paths.keys.each do |path|
               hash_of_paths[path].keys.each do |keyword|
@@ -106,7 +118,9 @@ module SkinnyJeans
               spin.call
             end
           end
-          puts "completed pageview_keywords date #{date.inspect} with #{hash_of_paths.keys.size} keys"
+          end
+          end
+          puts "completed pageview_keywords date #{date.inspect} with #{hash_of_paths.keys.size} keys in #{realtime}"
         end
 
       end
@@ -115,10 +129,13 @@ module SkinnyJeans
 
       Update.create!({:last_pageview_at => self.last_pageview_at, :lines_parsed => lines_parsed, :last_line_parsed => last_line_parsed.to_s[0..254]})
 
-      puts("total records in DB: #{Pageview.count}
-  lines parsed this round: #{lines_parsed}
-  lines persisted this round:#{persisted}
-  total SkinnyJeans executions since inception: #{Update.count}")
+puts("total records in DB: #{Pageview.count}
+lines parsed this round: #{lines_parsed}
+lines persisted this round:#{persisted}
+total SkinnyJeans executions since inception: #{Update.count}")
+puts("vacuuming DB")
+SkinnyJeans::SkinnyJeanDb.connection.execute("VACUUM")
+puts("vacuuming complete")
 
       return self
 
