@@ -80,7 +80,6 @@ module SkinnyJeans
 
           Spinner::with_spinner(:count=>hash_of_paths.keys.size, :message=>"Inserting rows into database for pageviews #{date}...") do |spin|
             hash_of_paths.keys.each_with_index do |path, index|
-              # puts "path is #{path}, #{index.to_f/hash_of_paths.keys.size.to_f}"
               pv = Pageview.find_or_create_by_date_and_path(date, path)
               pv.pageview_count ||= 0
               pv.pageview_count += hash_of_paths[path]
