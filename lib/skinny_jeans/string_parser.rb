@@ -40,7 +40,11 @@ module SkinnyJeans
         if _uri.query.present?
           _cgi = CGI.parse(_uri.query)
           if _cgi[param_name]
-            val = URI.decode(_cgi[param_name].join).strip.downcase
+            begin
+              val = URI.decode(_cgi[param_name].join).strip.downcase
+            rescue ArgumentError => e
+              puts "couldn't parse #{_cgi[param_name]}, must not be utf8"
+            end
             return (!val.nil? && val!='' ? val : nil)
           end
         end
