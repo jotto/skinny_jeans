@@ -17,7 +17,7 @@ require File.expand_path(File.dirname(__FILE__) + "/skinny_jeans/string_parser")
 require File.expand_path(File.dirname(__FILE__) + "/skinny_jeans/log_parser")
 
 # faster date parsing (about a 17% speed boost)
-require 'home_run'
+# require 'home_run'
 
 
 # SkinnyJeans::execute(ARGV.first) if "#{$0}".gsub(/.*\//,"") == "skinny_jeans.rb"
