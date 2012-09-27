@@ -51,6 +51,10 @@ module SkinnyJeans
           lineno += 1
           next if lineno_of_last_line_parsed && lineno <= lineno_of_last_line_parsed
 
+          # try to block most of the bots
+          _user_agent = line.split('"')[5] # parse out the user agent... this should be configurable for now
+          next if !_user_agent[/Mozilla\/|Opera/] || !!_user_agent[/bot|crawler|spider|slurp/i]
+
           begin
             path_match = line[@path_regexp, 1]
             next if path_match.nil?
