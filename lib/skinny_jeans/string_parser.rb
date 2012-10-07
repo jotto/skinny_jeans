@@ -39,13 +39,16 @@ module SkinnyJeans
         _uri = URI.parse(URI.encode(url_or_path))
         if _uri.query.present?
           _cgi = CGI.parse(_uri.query)
-          if _cgi[param_name]
+          if _cgi.keys.include?(param_name)
             begin
               val = URI.decode(_cgi[param_name].join).strip.downcase
             rescue ArgumentError => e
               puts "couldn't parse #{_cgi[param_name]}, must not be utf8"
             end
-            return (!val.nil? && val!='' ? val : nil)
+            return "no_keyword_referred" if val == ""
+            return val if !val.nil?
+            # return (!val.nil? && val!='' ? val : nil)
+            
           end
         end
         return nil
