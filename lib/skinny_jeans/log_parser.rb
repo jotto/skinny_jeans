@@ -51,11 +51,14 @@ module SkinnyJeans
           lineno += 1
           next if lineno_of_last_line_parsed && lineno <= lineno_of_last_line_parsed
 
+          next if line.strip == ""
+
           # try to block most of the bots
           _user_agent = line.split('"')[5] # parse out the user agent... this should be configurable for now
           next if !_user_agent[/Mozilla\/|Opera/] || !!_user_agent[/bot|crawler|spider|slurp/i]
 
           begin
+            next if line[/\s\d\d\d\s/].strip.to_i != 200
             path_match = line[@path_regexp, 1]
             next if path_match.nil?
             date_match = line[@date_regexp, 1]
@@ -188,6 +191,9 @@ end
     end
 
     def insert_or_increment(_datetime_obj, _path, _search_keyword = nil)
+
+      # dont care about query parameters
+      _path.sub!(/\?.*/,'')
 
       date_string = _datetime_obj.strftime(("%Y-%m-%d"))
 
